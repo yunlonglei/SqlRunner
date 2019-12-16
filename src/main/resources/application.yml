@@ -1,0 +1,16 @@
+app:
+  sql:
+    config:
+      enable: true
+spring:
+  datasource:
+    password: 123456
+    username: root
+    url: jdbc:h2:mem:test
+  h2:
+    console:
+      path: /h2-console
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
