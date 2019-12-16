@@ -4,8 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
@@ -36,17 +38,26 @@ public class SqlRunner implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws IOException {
-        if(!sqlContext.getEnable()){
+        if (!sqlContext.getEnable()) {
             return;
         }
-        String filepath= "classpath:/META-INF/comment-sql/";
+        String filepath = "classpath:/META-INF/comment-sql/";
         Resource resource = resourceLcoader.getResource(filepath);
+        if (!resource.exists()) {
+            return;
+        }
         String[] filelist = resource.getFile().list();
         for (String s : filelist) {
-            runScripts(resourceLcoader.getResource(filepath+s));
+            runScripts(resourceLcoader.getResource(filepath + s));
         }
     }
 
+    /**
+     * 用流的方式读取文件
+     * @param resource
+     * @return
+     * @throws IOException
+     */
     private String readSqlFile(Resource resource) throws IOException {
         InputStream in = resource.getInputStream();
         //<1>创建字节数组输出流，用来输出读取到的内容
@@ -67,12 +78,22 @@ public class SqlRunner implements ApplicationRunner {
         baos.close();
         return content;
     }
+
+    /**
+     * sql执行方法
+     * @param resource
+     */
     private void runScripts(Resource resource) {
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
         populator.setContinueOnError(false);
         populator.setSeparator(";");
         populator.setSqlScriptEncoding("UTF-8");
         populator.addScript(resource);
-        DatabasePopulatorUtils.execute(populator, dataSource);
+        try {
+            DatabasePopulatorUtils.execute(populator, dataSource);
+        } catch (DataAccessException e) {
+            //sql语句有异常捕获
+            log.error(((ClassPathResource) resource).getPath() +"文件中，SQL语句有错误！");
+        }
     }
 }
