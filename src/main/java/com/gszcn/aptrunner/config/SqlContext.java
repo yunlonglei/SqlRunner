@@ -24,4 +24,10 @@ public class SqlContext {
      * sql路径
      */
     private List<String> data;
+    /**
+     * sql执行策略
+     * ture 有错误继续向下执行
+     * false 有错误不再执行
+     */
+    private boolean continueOnError = true;
 }

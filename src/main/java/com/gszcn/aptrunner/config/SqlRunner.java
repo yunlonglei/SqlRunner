@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.dao.DataAccessException;
@@ -41,19 +40,24 @@ public class SqlRunner implements ApplicationRunner {
         if (!sqlContext.getEnable()) {
             return;
         }
-        String filepath = "classpath:/META-INF/comment-sql/";
-        Resource resource = resourceLcoader.getResource(filepath);
-        if (!resource.exists()) {
-            return;
-        }
-        String[] filelist = resource.getFile().list();
-        for (String s : filelist) {
-            runScripts(resourceLcoader.getResource(filepath + s));
+        //String filepath = "classpath:/META-INF/comment-sql/";
+        for (String filepath : sqlContext.getData()) {
+            Resource resource = resourceLcoader.getResource(filepath);
+            if (!resource.exists()) {
+                System.err.println("文件找不到！");
+                return;
+            }
+            String[] filelist = resource.getFile().list();
+            assert filelist != null;
+            for (String s : filelist) {
+                runScripts(resourceLcoader.getResource(filepath + s));
+            }
         }
     }
 
     /**
      * 用流的方式读取文件
+     *
      * @param resource
      * @return
      * @throws IOException
@@ -81,11 +85,12 @@ public class SqlRunner implements ApplicationRunner {
 
     /**
      * sql执行方法
+     *
      * @param resource
      */
     private void runScripts(Resource resource) {
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
-        populator.setContinueOnError(false);
+        populator.setContinueOnError(sqlContext.isContinueOnError());
         populator.setSeparator(";");
         populator.setSqlScriptEncoding("UTF-8");
         populator.addScript(resource);
@@ -93,7 +98,7 @@ public class SqlRunner implements ApplicationRunner {
             DatabasePopulatorUtils.execute(populator, dataSource);
         } catch (DataAccessException e) {
             //sql语句有异常捕获
-            log.error(((ClassPathResource) resource).getPath() +"文件中，SQL语句有错误！");
+            log.error(resource.toString() + "文件中，SQL语句有错误！");
         }
     }
 }

@@ -2,8 +2,6 @@ app:
   sql:
     config:
       enable: true
-      data:
-        - file:C:/Users/lenovo/Desktop/qqq/
 spring:
 #  datasource:
 #    password: 123456
@@ -13,6 +11,6 @@ spring:
 #    console:
 #      path: /h2-console
   datasource:
-    url: jdbc:oracle:thin:@192.168.1.102:1521:orcl
-    username: gsmiwxn
-    password: gsmiwxn
+    url: jdbc:oracle:thin:@10.215.0.126:1521:gsmielecard
+    username: gsmielecard
+    password: gsmielecard_Gsxtyninui
