@@ -19,6 +19,11 @@ import java.util.List;
 @Getter
 @Setter
 public class SqlContext {
+    /**
+     * sql执行的开关
+     * 默认是：false 关
+     *       true 开
+     */
     private Boolean enable=false;
     /**
      * sql路径
